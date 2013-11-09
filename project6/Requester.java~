@@ -1,0 +1,45 @@
+import java.util.Scanner;
+
+import edu.purdue.cs.cs180.channel.ChannelException;
+import edu.purdue.cs.cs180.channel.MessageListener;
+import edu.purdue.cs.cs180.channel.TCPChannel;
+
+public class Requester implements MessageListener {
+
+ private TCPChannel channel = null;
+ 
+ public Requester (String host, int port) {
+  try {
+   this.channel = new TCPChannel(host, port);
+  }
+  catch (ChannelException e) {
+   e.printStackTrace();
+  }
+  this.channel.setMessageListener(this);
+ }
+ @Override
+ public void messageReceived(String message, int clientID) {
+  System.out.println(message);
+ }
+ 
+ public void sendMessage (String message) {
+  try {
+   channel.sendMessage(message);
+  }
+  catch (ChannelException e) {
+   e.printStackTrace();
+  }
+ }
+ 
+ public static void main (String[] args) {
+  Requester requester = null;
+  try {
+   requester = new Requester(args[0], Integer.parseInt(args[1]));
+  }
+  catch (NumberFormatException e) {
+   System.out.println("Arguments must be a string and then an integer.");
+   System.exit(0);
+  }
+ }
+
+}
