@@ -79,56 +79,34 @@ public class Server implements MessageListener {
             Server server = new Server(new TCPChannel(port), args[1]);
         }
         catch (NumberFormatException e) {
-            System.out.println("Argument must be an integer");
+            System.out.println("First argument must be an integer");
             System.exit(0);
         }
     }
     
     @Override
     public void messageReceived(String message, int clientID) {
+        addClient(message, clientID);
         if (algorithm.equals("FCFS")) {
-            fcfs(message, clientID);
+            fcfs();
         }
         else if (algorithm.equals("CLOSEST")) {
-            sendClosest(message, clientID);
+            sendClosest();
         }
         else if (algorithm.equals("URGENCY")) {
-            sendUrgency(message, clientID);
+            sendUrgency();
         }
     }
     
-    public void fcfs(String message, int clientID) {
-        String[] m = message.split(" ");
-        if (message.charAt(0) == 'V') {
-            volunteers.add(new Volunteer(m[1], clientID));
-            if (!requesters.isEmpty()) {
-                Request r = requesters.get(0);
-                Volunteer v = volunteers.get(0);
-                sendMessage(v, r);
-                requesters.remove(0);
-                volunteers.remove(0);
-            }
-        }
-        else if (message.charAt(0) == 'R') {
-            requesters.add(new Request(m[1], m[2], clientID));
-            if (!volunteers.isEmpty()) {
-                Request r = requesters.get(0);
-                Volunteer v = volunteers.get(0);
-                sendMessage(v, r);
-                volunteers.remove(0);
-                requesters.remove(0);
-            }
+    public void fcfs() {
+        if ((!requesters.isEmpty()) && (!volunteers.isEmpty())) {
+            Request r = requesters.get(0);
+            Volunteer v = volunteers.get(0);
+            sendMessage(v, r);
         }
     }
     
-    public void sendClosest(String message, int clientID) {
-        String[] m = message.split(" ");
-        if (message.charAt(0) == 'R') {
-            requesters.add(new Request(m[1], m[2], clientID));
-        }
-        else if (message.charAt(0) == 'V') {
-            volunteers.add(new Volunteer(m[1], clientID));
-        }
+    public void sendClosest() {
         if ((volunteers.size() > 1) && (requesters.size() == 1)) {
             Volunteer chosen = null;
             Request r = requesters.get(0);
@@ -143,8 +121,6 @@ public class Server implements MessageListener {
                 }
             }
             sendMessage(chosen, r);
-            volunteers.remove(chosen);
-            requesters.remove(0);
         }
         else if ((requesters.size() > 1) && (volunteers.size() == 1)) {
             Request chosen = null;
@@ -160,29 +136,15 @@ public class Server implements MessageListener {
                 }
             }
             sendMessage(v, chosen);
-            volunteers.remove(0);
-            requesters.remove(chosen);
         }
         else if ((requesters.size() == 1) && (volunteers.size() == 1)) {
             sendMessage(volunteers.get(0), requesters.get(0));
-            volunteers.remove(0);
-            requesters.remove(0);
         }
     }
     
-    public void sendUrgency(String message, int clientID) {
-        String[] m = message.split(" ");
-        if (message.charAt(0) == 'R') {
-            requesters.add(new Request(m[1], m[2], clientID));
-        }
-        else if (message.charAt(0) == 'V') {
-            volunteers.add(new Volunteer(m[1], clientID));
-        }
-        
+    public void sendUrgency() {
         if ((volunteers.size() >= 1) && (requesters.size() == 1)) {
             sendMessage(volunteers.get(0), requesters.get(0));
-            volunteers.remove(0);
-            requesters.remove(0);
         }
         else if ((requesters.size() > 1) && (volunteers.size() == 1)) {
             Volunteer v = volunteers.get(0);
@@ -203,18 +165,12 @@ public class Server implements MessageListener {
             
             if (!emergency.isEmpty()) {
                 sendMessage(v, emergency.get(0));
-                volunteers.remove(0);
-                requesters.remove(emergency.get(0));
             }
             else if (!urgent.isEmpty()) {
                 sendMessage(v, urgent.get(0));
-                volunteers.remove(0);
-                requesters.remove(urgent.get(0));
             }
             else if (!normal.isEmpty()) {
                 sendMessage(v, normal.get(0));
-                volunteers.remove(0);
-                requesters.remove(normal.get(0));
             }
         }
     }
@@ -227,8 +183,20 @@ public class Server implements MessageListener {
             channel.sendMessage("VOLUNTEER " + v.getID() + " " + 
                                 timeValues[buildings.get(r.getLocation())][buildings.get(v.getLocation())]
                                     , r.getID());
+            volunteers.remove(v);
+            requesters.remove(r);
         } catch (ChannelException e) {
             e.printStackTrace();
+        }
+    }
+    
+    public void addClient(String message, int clientID) {
+        String[] m = message.split(" ");
+        if (message.charAt(0) == 'R') {
+            requesters.add(new Request(m[1], m[2], clientID));
+        }
+        else if (message.charAt(0) == 'V') {
+            volunteers.add(new Volunteer(m[1], clientID));
         }
     }
 }
