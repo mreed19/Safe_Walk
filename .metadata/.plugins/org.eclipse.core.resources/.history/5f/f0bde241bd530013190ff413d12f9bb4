@@ -27,14 +27,14 @@ import android.widget.TextView;
 public class VolunteerFragment extends Fragment implements 
 	ChannelListener, View.OnClickListener, Observer, OnItemSelectedListener {
     final static Model MODEL = new Model();
-    final static AndroidChannel CHANNEL = MainActivity.initializeChannel();
+    final static AndroidChannel channel = MainActivity.initializeChannel();
 
     private Button button;
     private TextView status;
     private Spinner locations;
 
     /**
-     * Creates the Volunteer user interface, and sets up the MODEL and CHANNEL to the server.
+     * Creates the Volunteer user interface, and sets up the MODEL and channel to the server.
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -45,7 +45,7 @@ public class VolunteerFragment extends Fragment implements
 
         // TODO: add this Fragment object to the MODEL observer and AndroidChannel listener...
         MODEL.addObserver(this);
-        CHANNEL.setChannelListener(this);
+        channel.setChannelListener(this);
 
         // TODO: set/restore the UI state from the MODEL...
         update(MODEL, null);
@@ -83,7 +83,7 @@ public class VolunteerFragment extends Fragment implements
         String[] words = selectedItem.split(" ");
         String message = "VOLUNTEER " + words[0];
         System.out.printf("Sending: %s\n", message);
-        CHANNEL.sendMessage(message);
+        channel.sendMessage(message);
     }
 
     /**

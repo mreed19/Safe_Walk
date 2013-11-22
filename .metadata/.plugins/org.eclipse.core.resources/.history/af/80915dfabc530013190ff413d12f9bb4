@@ -24,17 +24,16 @@ import android.widget.TextView;
  * @author duffy10
  */
 @SuppressLint("DefaultLocale")
-public class VolunteerFragment extends Fragment implements 
-	ChannelListener, View.OnClickListener, Observer, OnItemSelectedListener {
-    final static Model MODEL = new Model();
-    final static AndroidChannel CHANNEL = MainActivity.initializeChannel();
+public class VolunteerFragment extends Fragment implements ChannelListener, View.OnClickListener, Observer, OnItemSelectedListener {
+    final static Model model = new Model();
+    final static AndroidChannel channel = MainActivity.initializeChannel();
 
     private Button button;
     private TextView status;
     private Spinner locations;
 
     /**
-     * Creates the Volunteer user interface, and sets up the MODEL and CHANNEL to the server.
+     * Creates the Volunteer user interface, and sets up the model and channel to the server.
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -43,12 +42,12 @@ public class VolunteerFragment extends Fragment implements
         status = (TextView) rootView.findViewById(R.id.volunteer_status_textview);
         locations = (Spinner) rootView.findViewById(R.id.locations_spinner);
 
-        // TODO: add this Fragment object to the MODEL observer and AndroidChannel listener...
-        MODEL.addObserver(this);
-        CHANNEL.setChannelListener(this);
+        // TODO: add this Fragment object to the Model observer and AndroidChannel listener...
+        model.addObserver(this);
+        channel.setChannelListener(this);
 
-        // TODO: set/restore the UI state from the MODEL...
-        update(MODEL, null);
+        // TODO: set/restore the UI state from the model...
+        update(model, null);
 
         // TODO: add listeners for the Volunteer button and spinner...
         button.setOnClickListener(this);
@@ -57,13 +56,13 @@ public class VolunteerFragment extends Fragment implements
     }
     
     /**
-     * Cleans up on exit by deleting the MODEL observer.
+     * Cleans up on exit by deleting the model observer.
      */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // TODO: add code to delete this Observer from the MODEL
-        MODEL.deleteObserver(this);
+        // TODO: add code to delete this Observer from the model
+        model.deleteObserver(this);
     }
 
     /**
@@ -74,28 +73,28 @@ public class VolunteerFragment extends Fragment implements
         status.setText("Volunteer not implemented yet"); // TODO Delete this line (!)
 
         // TODO: disable controls until request assigned (or failure sent)...
-        MODEL.setUIEnabled(false);
-        MODEL.setStatus("Sending message to server; waiting for requester");
-        MODEL.notifyObservers();
+        model.setUIEnabled(false);
+        model.setStatus("Sending message to server; waiting for requester");
+        model.notifyObservers();
 
         // TODO: prepare message and send to server...
         String selectedItem = (String) locations.getSelectedItem();
         String[] words = selectedItem.split(" ");
         String message = "VOLUNTEER " + words[0];
         System.out.printf("Sending: %s\n", message);
-        CHANNEL.sendMessage(message);
+        channel.sendMessage(message);
     }
 
     /**
-     * Updates the view widgets whenever the MODEL changes.
+     * Updates the view widgets whenever the model changes.
      */
     @Override
     public void update(Observable observable, Object data) {
-        // TODO: using data from the MODEL, update the UI widgets (locations, button, and status)
-    	locations.setSelection(MODEL.getLocation(), true);
-    	button.setEnabled(MODEL.isUIEnabled());
-    	locations.setEnabled(MODEL.isUIEnabled());
-    	status.setText(MODEL.getStatus());
+        // TODO: using data from the model, update the UI widgets (locations, button, and status)
+    	locations.setSelection(model.getLocation(), true);
+    	button.setEnabled(model.isUIEnabled());
+    	locations.setEnabled(model.isUIEnabled());
+    	status.setText(model.getStatus());
     }
 
     /**
@@ -103,27 +102,27 @@ public class VolunteerFragment extends Fragment implements
      * Volunteer application, so the only message it knows about it is the LOCATION message: "LOCATION id urgency".
      */
     public void messageReceived(String message) {
-        // TODO: handle message from server (only valid one is "LOCATION BLDG URGENCY") by updating MODEL
+        // TODO: handle message from server (only valid one is "LOCATION BLDG URGENCY") by updating model
         // TODO: don't forget to notify observers
     	String[] fields = message.split(" ");
     	
     	if (fields[0].equals("LOCATION")) {
-    		MODEL.setUIEnabled(true);
-    		MODEL.setStatus(String.format("Proceed to %s with urgency %s", fields[1], fields[2]));
+    		model.setUIEnabled(true);
+    		model.setStatus(String.format("Proceed to %s with urgency %s", fields[1], fields[2]));
     	}
     	else
-    		MODEL.setStatus("Unexpected message: " + message);
-    	MODEL.notifyObservers();
+    		model.setStatus("Unexpected message: " + message);
+    	model.notifyObservers();
     }
 
     /**
-     * Handles changes to the "locations" and "urgencies" spinners. Updates the MODEL.
+     * Handles changes to the "locations" and "urgencies" spinners. Updates the model.
      */
     @Override
     public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-        // TODO: when an item is selected on the spinner, update the MODEL to keep track of it
+        // TODO: when an item is selected on the spinner, update the model to keep track of it
     	if (arg0 == locations)
-    		MODEL.setLocation(arg2);
+    		model.setLocation(arg2);
     	else
     		System.err.printf("ERROR: Unexpected spinner (%s)\n", arg0.toString());
     }
@@ -140,10 +139,10 @@ public class VolunteerFragment extends Fragment implements
      * Updates the status in the event of server connection failure. Called by AndroidChannel.
      */
     public void notifySendFailure() {
-        // TODO: the network connection is down or server unavailable; update status message in MODEL
+        // TODO: the network connection is down or server unavailable; update status message in model
         // TODO: don't forget to notify observers
-    	MODEL.setStatus("Error sending message to server; check server status and network connection");
-        MODEL.setUIEnabled(true);
-        MODEL.notifyObservers();
+    	model.setStatus("Error sending message to server; check server status and network connection");
+        model.setUIEnabled(true);
+        model.notifyObservers();
     }
 }
