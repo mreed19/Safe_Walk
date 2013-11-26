@@ -1,0 +1,42 @@
+import edu.purdue.cs.cs180.channel.ChannelException;
+import edu.purdue.cs.cs180.channel.MessageListener;
+import edu.purdue.cs.cs180.channel.TCPChannel;
+
+public class Server implements MessageListener{
+
+ private TCPChannel channel;
+ 
+ public Server(int port) {
+  this.channel = new TCPChannel(port);
+  this.channel.setMessageListener(this);
+ }
+ 
+ public static void main(String[] args) {
+  try {
+   int port = Integer.parseInt(args[0]);
+   Server server = new Server(port);
+  }
+  catch (NumberFormatException e) {
+   System.out.println("Argument must be an integer");
+   System.exit(0);
+  }
+ }
+ 
+ @Override
+ public void messageReceived(String message, int clientID) {
+  System.out.println("Message Recieved");
+  try {
+   if (message.charAt(0) == 'V') {
+    System.out.println("Volunteer Request");
+    channel.sendMessage("Volunteer Request", clientID);
+   }
+   else if (message.charAt(0) == 'R') {
+    System.out.println("Requester Request");
+    channel.sendMessage("Requester Request", clientID);
+   }
+  }
+  catch (ChannelException e) {
+   e.printStackTrace();
+  }
+ }
+}
